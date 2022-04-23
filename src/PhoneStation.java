@@ -24,8 +24,7 @@ public class PhoneStation implements Runnable {
                     }
 
 
-                }
-                while (COUNTER < 20);
+                } while (COUNTER < 20);
 
                 printStatitonState();
                 System.out.println(String.valueOf(PhoneStation.COUNTER + " People Talked"));

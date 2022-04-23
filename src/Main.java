@@ -17,7 +17,7 @@ public class Main {
             t.start();
         }
 
-        for (Thread t : threadArrayList //waiting threads
+        for (Thread t : threadArrayList //waiting threads to join main thread
         ) {
             t.join();
         }

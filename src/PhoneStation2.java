@@ -17,13 +17,13 @@ public class PhoneStation2 implements Runnable {
                     printStatitonState();
 
                     try {
-                        Thread.sleep(40);
+                        Thread.sleep(40);   //update every .. milliseconds
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
 
 
-                } while (COUNTER < 20);
+                } while (COUNTER < 20); // update until 20 people talked
 
                 printStatitonState();
                 System.out.println(COUNTER + " People Talked");

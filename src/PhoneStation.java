@@ -1,3 +1,5 @@
+import java.io.IOException;
+import java.util.Scanner;
 import java.util.concurrent.Semaphore;
 
 public class PhoneStation implements Runnable {
@@ -7,14 +9,40 @@ public class PhoneStation implements Runnable {
     private String id;
     static int WAITING = 0;
 
+    public PhoneStation() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                do {
 
+                    printStatitonState();
+
+                    try {
+                        Thread.sleep(40);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+
+
+                }
+                while (COUNTER < 20);
+
+                printStatitonState();
+                System.out.println(String.valueOf(PhoneStation.COUNTER + " People Talked"));
+                System.out.println("Press Enter for exit");
+                new Scanner(System.in).nextLine();
+            }
+        }).start();
+
+
+    }
 
 
     @Override
     public void run() {
         WAITING++;
         while (true) {
-            printStatitonState(OPERATOR.availablePermits(), WAITING, COUNTER,LINE.availablePermits());
+            //printStatitonState(OPERATOR.availablePermits(), WAITING, COUNTER,LINE.availablePermits());
 
             if (OPERATOR.tryAcquire()) {
                 if (LINE.tryAcquire()) {
@@ -52,27 +80,27 @@ public class PhoneStation implements Runnable {
 
             }
         }
-        printStatitonState(OPERATOR.availablePermits(), WAITING, COUNTER,LINE.availablePermits());
+        //printStatitonState(OPERATOR.availablePermits(), WAITING, COUNTER,LINE.availablePermits());
 
     }
 
-    private void printStatitonState(int operators, int waiting, int done,int line) {
-        System.out.print("\033[H\033[2J");
-        System.out.flush();
+    private void printStatitonState() {
+        clearConsole();
 
 
         System.out.print("Line: ");
-        printbar(1,line,5);
+        printbar(1, LINE.availablePermits(), 5);
         System.out.print("Operators: ");
-        printbar(2,operators,0);
+        printbar(2, OPERATOR.availablePermits(), 0);
         System.out.print("Waiting: ");
-        printbar(20,waiting,2);
+        printbar(20, WAITING, 2);
         System.out.print("Done: ");
-        printbar(20,done,5);
+        printbar(20, COUNTER, 5);
 
 
     }
-    private void printbar(int range, int data , int offset){
+
+    private void printbar(int range, int data, int offset) {
         for (int i = 0; i < offset; i++) {
             System.out.print(" ");
         }
@@ -84,6 +112,20 @@ public class PhoneStation implements Runnable {
             } else System.out.print(" ");
         }
         System.out.println("]");
+
+    }
+
+
+    private static void clearConsole() {
+        try {
+            if (System.getProperty("os.name").contains("Windows")) {
+                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+            } else {
+                System.out.print("\033\143");
+            }
+        } catch (Exception e) {
+
+        }
 
     }
 }

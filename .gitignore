@@ -2,3 +2,5 @@
 /out/
 /.idea/
 OS_Multithread.iml
+/src/PhoneStation.class
+src/Main.class

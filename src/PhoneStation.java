@@ -42,7 +42,7 @@ public class PhoneStation implements Runnable {
     public void run() {
         WAITING++;
         while (true) {
-            //printStatitonState(OPERATOR.availablePermits(), WAITING, COUNTER,LINE.availablePermits());
+
 
             if (OPERATOR.tryAcquire()) {
                 if (LINE.tryAcquire()) {
@@ -80,7 +80,7 @@ public class PhoneStation implements Runnable {
 
             }
         }
-        //printStatitonState(OPERATOR.availablePermits(), WAITING, COUNTER,LINE.availablePermits());
+
 
     }
 

@@ -10,7 +10,7 @@ public class Main {
 
     public static void main(String[] args) throws InterruptedException {
 
-        PhoneStation phoneStation = new PhoneStation();
+        PhoneStation2 phoneStation = new PhoneStation2();
 
         ArrayList<Thread> mythreads = new ArrayList<>();
         for (int i = 0; i < 20; i++) {

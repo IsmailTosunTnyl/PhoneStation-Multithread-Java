@@ -9,7 +9,7 @@ public class PhoneStation2 implements Runnable {
     static int WAITING_L = 0;   //keep line queue
 
     public PhoneStation2() {
-        new Thread(new Runnable() {   // updating console
+        new Thread(new Runnable() {   // updating console separate from other threads
             @Override
             public void run() {
                 do {

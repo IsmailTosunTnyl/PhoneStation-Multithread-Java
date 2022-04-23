@@ -1,28 +1,23 @@
 import java.util.ArrayList;
-import java.util.Scanner;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+
 
 
 public class Main {
 
     public static void main(String[] args) throws InterruptedException {
 
-        PhoneStation2 phoneStation = new PhoneStation2();
+        PhoneStation2 phoneStation = new PhoneStation2();   // initialize a phone station
+        ArrayList<Thread> threadArrayList = new ArrayList<>();  // initialize an array list for threads
 
-        ArrayList<Thread> mythreads = new ArrayList<>();
         for (int i = 0; i < 20; i++) {
-            mythreads.add(new Thread(phoneStation));
-
+            threadArrayList.add(new Thread(phoneStation));  //creating threads
         }
-        for (Thread t : mythreads
+        for (Thread t : threadArrayList //starting threads
         ) {
             t.start();
         }
 
-        for (Thread t : mythreads
+        for (Thread t : threadArrayList //waiting threads
         ) {
             t.join();
         }

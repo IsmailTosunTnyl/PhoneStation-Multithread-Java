@@ -2,9 +2,9 @@ import java.util.Scanner;
 import java.util.concurrent.Semaphore;
 
 public class PhoneStation implements Runnable {
-    static Semaphore OPERATOR = new Semaphore(2);   //control access to operators
-    static Semaphore LINE = new Semaphore(1);       //control access to line
-    static int COUNTER = 0;
+    static Semaphore OPERATORS = new Semaphore(2);   //control access to operators
+    static final Semaphore LINE = new Semaphore(1);       //control access to line
+    static int COUNTER = 0;     // keep people count that successfully made phone call
     static int WAITING_OP = 0;  //keep operator queue
     static int WAITING_L = 0;   //keep line queue
 
@@ -49,7 +49,7 @@ public class PhoneStation implements Runnable {
     }
 
     private void getOperator() throws InterruptedException {
-        if (OPERATOR.tryAcquire()) {
+        if (OPERATORS.tryAcquire()) {
             Thread.sleep((long) (Math.random() * 2000)); //communication with operator
             WAITING_OP--;
             WAITING_L++;
@@ -62,29 +62,32 @@ public class PhoneStation implements Runnable {
         }
     }
 
-    private synchronized void getLine() throws InterruptedException {
-        if (!LINE.tryAcquire()) {
-            wait();
+    private void getLine() throws InterruptedException {
+        synchronized (LINE) {
+            // allow only one thread work as a time inside this function via synchronized
+            LINE.acquire();
+            //acquiring and releasing not necessary in synchronized function
+            // we keep them for monitoring stats on terminal
+            Thread.sleep((long) (Math.random() * 2000)); //simulating talking time
+
+            COUNTER++;              //updating static variables for visual check
+            WAITING_L--;
+            LINE.release();         //releasing line semaphore
+            OPERATORS.release();      //releasing operator semaphore
+            //notify thread which waiting for line when the method ends
+            LINE.notify();
         }
-        Thread.sleep((long) (Math.random() * 2000)); //simulating talking time
-
-        COUNTER++;              //updating static variables for visual check
-        WAITING_L--;
-        LINE.release();         //releasing semaphore for line
-        OPERATOR.release();      //releasing semaphore for operator
-        notify();               //notify thread which waiting for line
-
 
     }
 
     private void printStatitonState() {
-        clearConsole();                //clear consol before write updated info
+        clearConsole();                //clear console before write updated info
 
         // print status bars with tags
         System.out.print("Line: ");
         printBar(1, LINE.availablePermits(), 6);
         System.out.print("Operators: ");
-        printBar(2, OPERATOR.availablePermits(), 1);
+        printBar(2, OPERATORS.availablePermits(), 1);
         System.out.print("Waiting_L: ");
         printBar(20, WAITING_L, 1);
         System.out.print("Waiting_op: ");

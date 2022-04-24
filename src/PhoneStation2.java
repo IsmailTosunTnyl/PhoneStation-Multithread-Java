@@ -2,14 +2,14 @@ import java.util.Scanner;
 import java.util.concurrent.Semaphore;
 
 public class PhoneStation2 implements Runnable {
-    static Semaphore OPERATOR = new Semaphore(2);   //control access to operators
-    static Semaphore LINE = new Semaphore(1);       //control access to line
+    static Semaphore OPERATOR = new Semaphore(2);
+    static Semaphore LINE = new Semaphore(1);
     static int COUNTER = 0;
-    static int WAITING_OP = 0;  //keep operator queue
-    static int WAITING_L = 0;   //keep line queue
+    private String id;
+    static int WAITING = 0;
 
     public PhoneStation2() {
-        new Thread(new Runnable() {   // updating console separate from other threads
+        new Thread(new Runnable() {
             @Override
             public void run() {
                 do {
@@ -17,16 +17,16 @@ public class PhoneStation2 implements Runnable {
                     printStatitonState();
 
                     try {
-                        Thread.sleep(40);   //update every .. milliseconds
+                        Thread.sleep(40);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
 
 
-                } while (COUNTER < 20); // update until 20 people talked
+                } while (COUNTER < 20);
 
                 printStatitonState();
-                System.out.println(COUNTER + " People Talked");
+                System.out.println(String.valueOf(PhoneStation2.COUNTER + " People Talked"));
                 System.out.println("Press Enter for exit");
                 new Scanner(System.in).nextLine();
             }
@@ -38,69 +38,72 @@ public class PhoneStation2 implements Runnable {
 
     @Override
     public void run() {
-        WAITING_OP++;   // adding every thread to operator waiting queue
-        try {
-            getOperator();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+        WAITING++;
+        while (true) {
+
+
+            if (OPERATOR.tryAcquire()) {
+                if (LINE.tryAcquire()) {
+                    WAITING--;
+
+                    try {
+                        Thread.sleep((long) (Math.random() * 2000));
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    COUNTER++;
+                    OPERATOR.release();
+                    LINE.release();
+
+                    break;
+                } else {
+
+                    try {
+                        Thread.sleep((long) (Math.random() * 500));
+                        OPERATOR.release();
+                        Thread.sleep((long) (Math.random() * 500));
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            } else {
+
+
+                try {
+                    Thread.sleep((long) (Math.random() * 1000));
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+            }
         }
-
-
-    }
-
-    private void getOperator() throws InterruptedException {
-        if (OPERATOR.tryAcquire()) {
-            Thread.sleep((long) (Math.random() * 2000)); //communication with operator
-            WAITING_OP--;
-            WAITING_L++;
-            getLine();
-
-        } else {
-            Thread.sleep((long) (Math.random() * 2000)); //communication with operator
-            getOperator();
-
-        }
-    }
-
-    private synchronized void getLine() throws InterruptedException {
-        if (!LINE.tryAcquire()) {
-            wait();
-        }
-        Thread.sleep((long) (Math.random() * 2000)); //simulating talking time
-
-        COUNTER++;              //updating static variables for visual check
-        WAITING_L--;
-        LINE.release();         //releasing semaphore for line
-        OPERATOR.release();      //releasing semaphore for operator
-        notify();               //notify thread which waiting for line
 
 
     }
 
     private void printStatitonState() {
-        clearConsole();                //clear consol before write updated info
+        clearConsole();
 
-        // print status bars with tags
+
         System.out.print("Line: ");
-        printBar(1, LINE.availablePermits(), 6);
+        printbar(1, LINE.availablePermits(), 5);
         System.out.print("Operators: ");
-        printBar(2, OPERATOR.availablePermits(), 1);
-        System.out.print("Waiting_L: ");
-        printBar(20, WAITING_L, 1);
-        System.out.print("Waiting_op: ");
-        printBar(20, WAITING_OP, 0);
+        printbar(2, OPERATOR.availablePermits(), 0);
+        System.out.print("Waiting: ");
+        printbar(20, WAITING, 2);
         System.out.print("Done: ");
-        printBar(20, COUNTER, 6);
+        printbar(20, COUNTER, 5);
 
 
     }
 
-    private void printBar(int range, int data, int offset) {
-        for (int i = 0; i < offset; i++) {      //print offset for different tag
+    private void printbar(int range, int data, int offset) {
+        for (int i = 0; i < offset; i++) {
             System.out.print(" ");
         }
         System.out.print("[");
-        for (int i = 0; i < range; i++) {       //print every status bar
+        for (int i = 0; i < range; i++) {
             if (data > 0) {
                 System.out.print("=");
                 data--;
@@ -112,7 +115,6 @@ public class PhoneStation2 implements Runnable {
 
 
     private static void clearConsole() {
-        //clear console depends on operating system
         try {
             if (System.getProperty("os.name").contains("Windows")) {
                 new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
@@ -120,7 +122,6 @@ public class PhoneStation2 implements Runnable {
                 System.out.print("\033\143");
             }
         } catch (Exception e) {
-            e.printStackTrace();
 
         }
 

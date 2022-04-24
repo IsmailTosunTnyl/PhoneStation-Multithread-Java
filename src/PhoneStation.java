@@ -56,7 +56,7 @@ public class PhoneStation implements Runnable {
             getLine();
 
         } else {
-            Thread.sleep((long) (Math.random() * 2000)); //communication with operator
+            Thread.sleep((long) (Math.random() * 2000)); //wait for operator
             getOperator();
 
         }
